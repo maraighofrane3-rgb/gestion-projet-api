@@ -67,4 +67,80 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
+// 3 bich na3mlou l'affichage lil projet mta3 id spécifique (GET route)
+router.get('/:id', authMiddleware, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id)
+            .populate('owner', 'nom login role');
+
+        // cas ou le projet n'existe pas (404 Not Found)
+        if (!project) {
+            return res.status(404).json({ message: "Le projet est introuvable" });
+        }
+
+        // cas ou l'utilisateur role mte3ou "user" w houwa mouch l'owner lil projet
+        if (req.user.role === 'user' && project.owner._id.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Vous n'êtes pas le propriétaire de ce projet" });
+        }
+
+        res.json(project);
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur dans le serveur", error: error.message });
+    }
+});
+
+// 4 bich na3mlou l'update lil projet mta3 id spécifique (PUT route)
+router.put('/:id', authMiddleware, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ message: "Le projet est introuvable" });
+        }
+
+        // cas ou l'utilisateur role mte3ou "user" w houwa mouch l'owner lil projet
+        if (req.user.role === 'user' && project.owner.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Vous n'êtes pas le propriétaire de ce projet" });
+        }
+
+        // update lil projet bil informations mta3 l'utilisateur li 3andou l'accès lil route
+        const { nom, description, statut } = req.body;
+        if (nom) project.nom = nom;
+        if (description) project.description = description;
+        if (statut) project.statut = statut; 
+
+        // sauvegarde lil modification mta3 id spécifique fi il base de données
+        const updatedProject = await project.save();
+        res.json(updatedProject);
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur dans la mise à jour", error: error.message });
+    }
+});
+
+// 5 bich na3mlou l'delete lil projet mta3 id spécifique (DELETE route)
+router.delete('/:id', authMiddleware, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ message: "Le projet est introuvable" });
+        }
+
+        // cas ou l'utilisateur role mte3ou "user" w houwa mouch l'owner lil projet
+        // manager 3andou l'accès lil delete lil projet mta3 ay utilisateur
+        if (req.user.role === 'user' && project.owner.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Vous n'êtes pas le propriétaire de ce projet" });
+        }
+
+        // delete lil projet mta3 id spécifique fi il base de données
+        await project.deleteOne();
+        res.json({ message: "Le projet a été supprimé avec succès ✅" });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur dans la suppression", error: error.message });
+    }
+});
+
 module.exports = router;
