@@ -115,5 +115,64 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// 4 Modifier une tâche (PUT /api/tasks/:id)
+router.put('/:id', authMiddleware, async (req, res) => {
+    try {
+        //nlawjou 3la task fil BD a partir mil ID
+        const task = await Task.findById(req.params.id);
+        //cas: tache mouch mawjouda fil BD
+        if (!task) {
+            return res.status(404).json({ message: "Tache introuvable" });
+        }
+
+        //seul le manager ynajm ybadel il utilisateur il assigné l tache
+        if (req.body.assignedUser && req.user.role !== 'manager') {
+            return res.status(403).json({ message: "Seul un Manager peut modifier l'utilisateur assigné à la tache" });
+        }
+
+        // Récuperation lil données envoyées par client
+        const { titre, description, statut, deadline, project, assignedUser } = req.body;
+        //ken les champs ili mawjoudin fil requete nbadlohom
+        if (titre) task.titre = titre;
+        if (description) task.description = description;
+        //le modéle Mongoose ya3ml verification automatique
+        if (statut) task.statut = statut; 
+        if (deadline) task.deadline = deadline;
+        if (project) task.project = project;
+        if (assignedUser !== undefined) task.assignedUser = assignedUser;
+
+        //enregitrement lil modifications fil BD
+        const updatedTask = await task.save();
+        //affichage de tache (type JSON)
+        res.json(updatedTask);
+
+    } catch (error) {
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: "Erreur de validation des données : " + error.message });
+        }
+        res.status(500).json({ message: "Erreur lors de la modification de la tache ", error: error.message });
+    }
+});
+
+
+// 5 supprimer une tache (DELETE /api/tasks/:id)
+
+router.delete('/:id', authMiddleware, async (req, res) => {
+    try {
+        //nlawjou 3la il tache ili bich nfas5ouha fil BD
+        const task = await Task.findById(req.params.id);
+        //verifier mawjouda iwla lee
+        if (!task) {
+            return res.status(404).json({ message: "المهمة ما موجودةش" });
+        }
+
+        // nfas5ou il tache mil BD
+        await task.deleteOne();
+        res.json({ message: "Tache supprimée avec succès. " });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur lors de la suppression de la tache. ", error: error.message });
+    }
+});
 
 module.exports = router;
