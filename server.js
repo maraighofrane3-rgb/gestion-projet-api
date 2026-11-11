@@ -22,6 +22,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/auth', require('./routes/authRoutes'));
 //importer les routes mta3 les projets (create, read, update, delete)
 app.use('/api/projects', require('./routes/projectRoutes'));
+//importer les routes des taches
+app.use('/api/tasks', require('./routes/taskRoutes'));
 
 //demarrer le serveur sur le port spécifié dans le fichier .env ou sur le port 5000 par défaut
 const PORT = process.env.PORT || 5000;
