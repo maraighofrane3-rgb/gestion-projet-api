@@ -3,6 +3,7 @@ const router = express.Router();
 const Project = require('../models/Project');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
+const Task = require('../models/Task');
 
  
 // 1 bich na3mlou creation creation lil projet  
@@ -134,9 +135,13 @@ router.delete('/:id', authMiddleware, async (req, res) => {
             return res.status(403).json({ message: "Vous n'êtes pas le propriétaire de ce projet" });
         }
 
+        // bich nzidou ki tji tfasa5 projet lazem il tasks mte3ou yitfas5ou 9bal
+        await Task.deleteMany({ project: project._id });
+      
+
         // delete lil projet mta3 id spécifique fi il base de données
         await project.deleteOne();
-        res.json({ message: "Le projet a été supprimé avec succès ✅" });
+        res.json({ message: "Le projet et ses taches ont été supprimé avec succès ✅" });
 
     } catch (error) {
         res.status(500).json({ message: "Erreur dans la suppression", error: error.message });
