@@ -24,6 +24,8 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/projects', require('./routes/projectRoutes'));
 //importer les routes des taches
 app.use('/api/tasks', require('./routes/taskRoutes'));
+//importer les routes de gestion des errors
+app.use(errorMiddleware);
 
 //demarrer le serveur sur le port spécifié dans le fichier .env ou sur le port 5000 par défaut
 const PORT = process.env.PORT || 5000;
